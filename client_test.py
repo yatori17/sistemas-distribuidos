@@ -1,8 +1,13 @@
+import time
 import xmlrpc.client
 import sys
-proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+proxy = xmlrpc.client.ServerProxy("http://localhost:3030/")
 
 print("Test client for WebService functionality")
-response = proxy.service(['happy', '/mnt/c/Users/ric10/Desktop/Profissional/git/sistemas-distribuidos/files'])
+for i in range(1,2):
+    start_time = time.time()
+    response = proxy.service('hi')
+    end_time = time.time()
+    print(end_time - start_time)
 
-print(response)
+

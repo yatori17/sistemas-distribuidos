@@ -1,3 +1,4 @@
+from cgitb import text
 import os
 import sys
 import re
@@ -8,25 +9,29 @@ from pyDF import *
 
 report = []
 files = []
+path = '/files'
+
 
 def find_word(args):
-	# feed_files = Source(file_list)
-	# file_list = text_list(sys.argv[2])[:n_files]
-	return args
-	# fname = args[0]
-	# name = fname.split('/')[-1]
-	# with open(args[0], 'r') as f:
-	# 	text = f.read()
-	# 	matches = re.findall(args[1], text)
-	# 	if len(matches) > 0:
-	# 		files.append(args[0].split('/')[-1])
-	# 	print('{} matches of {} in file {}'.format(len(matches), args[1], args[0].split('/')[-1]))
-	# return len(matches)
+    qtd = 0
+    file_list = text_list()
+    for i in range (len(file_list)):
+        fname = file_list[i]
+        print(args)
+        name = fname.split('/')[-1]
+        with open(fname, 'r') as f:
+            text = f.read()
+            matches = re.findall(args[0], text)
+            if len(matches) > 0:
+                files.append(fname.split('/')[-1])
+            print('{} matches of {} in file {}'.format(len(matches), args[0], name))
+        qtd = qtd + len(matches)
+    return qtd
 
-def text_list(rootdir):
+def text_list():
 	fnames=[]
-	
-	for current, directories, files in os.walk(rootdir):
+	root_path = os.getcwd() + path
+	for current, directories, files in os.walk(root_path):
 		for f in files:
 			fnames.append(current + '/' + f)
 			
@@ -46,16 +51,23 @@ def find_word_without_worker(args):
 
 n_workers = int(sys.argv[1])
 graph = DFGraph()
+file_list = text_list()
+#feed_files = SourceWS(file_list)
+#file_list = text_list()
 sched = SchedulerWS(graph, n_workers, mpi_enabled = False)
-req_node, resp_node = sched.set_wservice(('localhost', 8000))
+req_node, resp_node = sched.set_wservice(('localhost', 3030))
 
-find_word_in_files = FilterTagged(find_word, 2)
+find_word_in_files = FilterTagged(find_word, 1)
 
-graph.add(req_node)
+
+#graph.add(feed_files)
 graph.add(find_word_in_files)
+graph.add(req_node)
 graph.add(resp_node)
 
-req_node.add_edge(find_word_in_files, 0)
+#feed_files.add_edge(find_word_in_files, 0)
+#req_node.add_edge(feed_files, 0)
+req_node.add_edge(find_word_in_files, 1)
 find_word_in_files.add_edge(resp_node, 0)
 
 start_time = time.time()
